@@ -1,25 +1,40 @@
-import logo from './logo.svg';
 import './App.css';
+import {Navigate, Route, Routes} from "react-router-dom";
+import Login from "./pages/login/Login";
+import Dashboard from "./pages/dashboard/Dashboard";
+import {useDispatch, useSelector} from "react-redux";
+import UserList from "./pages/users/UserList/UserList";
+import AdminLayout from "./components/Layout/AdminLayout";
+import {useEffect} from "react";
+import {setAuth} from "./feature/auth/authSlice";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const auth = useSelector(state => state.auth)
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        let token = localStorage.getItem('token');
+        console.log(token)
+        if (token) {
+          dispatch(setAuth())
+        }
+    }, [])
+
+    return (
+        <>
+            <Routes>
+                <Route path="/login" element={ !auth.isAuth ? <Login/> : <Navigate to="/dashboard" replace/>}/>
+                {auth.isAuth ? (
+                    <>
+                        <Route path="/" element={<AdminLayout/>}>
+                            <Route path="/dashboard" element={<Dashboard/>}/>
+                            <Route path="/users" element={<UserList/>}/>
+                        </Route>
+                    </>
+                ) : <Route path="*" element={<Navigate to="/login" replace/>}/>}
+            </Routes>
+        </>
+    );
 }
 
 export default App;
